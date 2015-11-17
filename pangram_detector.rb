@@ -5,13 +5,12 @@ class PangramDetector
 	end
 
 	def ask_for_input
-		@number_of_lines.times { @lines << gets.chomp }
+		@number_of_lines.times { @lines << gets.chomp.downcase }
 	end
 
 	def detect
 		@lines.map do |line|
-			l = line.downcase.chars.select {|c| c =~ /[a-z]/ }
-			('a'..'z').to_a - l == [] ? true : false
+			line.chars.select {|c| c =~ /[a-z]/ }.uniq.count == 26 ? true : false
 		end
 	end
 end
