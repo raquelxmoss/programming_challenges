@@ -1,18 +1,53 @@
 require 'rspec'
 require 'ostruct'
+require 'pry'
 
 class BlackJack
 	attr_reader :player, :dealer, :deck
 
 	def initialize
-		@dealer = OpenStruct.new(hand: [], bust: false, turns: 0)
-		@player = OpenStruct.new(hand: [], bust: false, turns: 0)
+		@dealer = OpenStruct.new(name: "Dealer", hand: [], bust: false)
+		@player = OpenStruct.new(name: "Player", hand: [], bust: false)
 		@active_player = @player
 		@deck = Deck.new
 	end
 
 	def play
 		initial_deal
+		until finished?
+			choose_to_hit
+			check_for_bust
+		end
+		print_result
+	end
+
+	def choose_to_hit
+		puts @active_player.name
+		p @active_player.hand
+		puts "Hit? (Y/N)"
+		choice = gets.chomp.upcase
+		if choice == "Y"
+			draw_card
+			choose_to_hit
+		else
+			change_active_player
+		end
+	end
+
+	def change_active_player
+		if @active_player == @player
+			@active_player = @dealer
+		else
+			@active_player = @player
+		end
+	end
+
+	def check_for_bust
+		@active_player.bust = true if calculate_hand(@active_player) > 21
+	end
+
+	def calculate_hand(player)
+		player.hand.map { |card| card.is_a?(String) ? 10 : card }.reduce(:+)
 	end
 
 	def draw_card
@@ -21,12 +56,25 @@ class BlackJack
 
 	def initial_deal
 		2.times do
-			@dealer.hand << draw_card
-			@player.hand << draw_card
+			@dealer.hand << @deck.cards.pop
+			@player.hand << @deck.cards.pop
 		end
 	end
 
-	def won?
+	def finished?
+		calculate_hand(@player) == 21 || calculate_hand(@dealer) == 21 || @player.bust || @dealer.bust
+	end
+
+	def print_result
+		if @player.bust 
+			puts "Player is bust"
+		elsif @dealer.bust
+			puts "Dealer is bust"
+		elsif calculate_hand(@player) == 21
+			puts "Player has blackjack"
+		elsif calculate_hand(@dealer) == 21
+			puts "Dealer has blackjack"
+		end	
 	end
 end
 
@@ -43,6 +91,9 @@ class Deck
 		simple_cards + face_cards
 	end
 end
+
+game = BlackJack.new
+game.play
 
 
 describe BlackJack do
