@@ -15,8 +15,8 @@ class BlackJack
 	def play
 		initial_deal
 		until finished?
-			choose_to_hit
 			check_for_bust
+			choose_to_hit
 		end
 		print_result
 	end
